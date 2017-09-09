@@ -1,0 +1,7 @@
+name: TokenDice
+main: com.pudimcraft.tokendice.Dice
+version: 1.5
+description: "TokenDice desenvolvido por blty"
+commands:
+  tokendice:
+  
