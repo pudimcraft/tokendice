@@ -42,17 +42,26 @@ public class Dice extends JavaPlugin {
 		}
 		return (TokenEnchant) plugin;
 	}
-    public void startDelay(final Player p, int aposta) {
+    public void resultDelay(final Player p, int aposta,int tokens, int resultado) {
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
             public void run() {
-            	TitleAPI.sendTitle(p,20,20,20,"§7Apostando" + aposta + "§7Tokens","§7No numero" + aposta + "§7do dado");
+            	int apostawin = aposta * 2;
+            	if(resultado == 1) {
+            		TitleAPI.sendTitle(p,20,20,20,"§a§lGANHOU §e " + tokens,"§7No numero" + apostawin + "§7do dado");
+            		 p.playSound(p.getLocation(), Sound.BLOCK_NOTE_PLING, 1.0F, 1.0F);
+            	} else {
+            		TitleAPI.sendTitle(p,20,20,20,"§c§lPERDEU §e " + tokens,"§7No numero" + aposta + "§7do dado");
+            		 p.playSound(p.getLocation(), Sound.ENTITY_ENDERDRAGON_HURT, 1.0F, 1.0F);
+
+            	}
             }
-        }, 0); 
+        }, 140); 
     }
     public void countdownDelay(final Player p, int countdown, int aposta, int time) {
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
             public void run() {
-            	TitleAPI.sendTitle(p,20,20,20,"§7Jogando Dado...","§0" + countdown);
+            	TitleAPI.sendTitle(p,0,20,0,"§7Jogando Dado...","§0" + countdown);
+            	p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BASS, 1.0F, 1.0F);
             }
         }, time); 
     }
@@ -70,29 +79,25 @@ public class Dice extends JavaPlugin {
 	 countdownDelay(p, 2, aposta, 100);
 	 countdownDelay(p, 1, aposta, 120);
 	 if(finaldado == aposta) {
-		p.sendMessage("GANHOU");
-//		ganhouDado(p, tokens, finaldado);
+		resultDelay(p, aposta, tokens, 1);
+		ganhouDado(p, tokens);
 	 return true;
 	 } else {
-		 p.sendMessage("PERDEU");
-//		 perdeuDado(p, tokens, finaldado);
+		 resultDelay(p, aposta, tokens, 0);
+		 perdeuDado(p, tokens);
 	 return false;
 	 }
 	
 	 }
-//	 private void perdeuDado(Player p, int tokens, int ndado) {
-//		 TokenEnchant te = getTokenEnchant();
-//	 TitleAPI.sendTitle(p,20,60,20,"DADO " + ndado ,"PERDEU TROXAUM");
-//	 p.playSound(p.getLocation(), Sound.ENTITY_ENDERDRAGON_HURT, 1.0F, 1.0F);
-//	 te.removeTokens(p, tokens);
-//	 }
-//	 private void ganhouDado(Player p,int tokens, int ndado) {
-//		 TokenEnchant te = getTokenEnchant();
-//	 TitleAPI.sendTitle(p,20,60,20,"DADO " + ndado ,"GANHOU KCT");
-//	 p.playSound(p.getLocation(), Sound.BLOCK_NOTE_PLING, 1.0F, 1.0F);
-//	 int tokens2x = tokens * 2;
-//	 te.addTokens(p, tokens2x);
-//	 }
+	 private void perdeuDado(Player p, int tokens) {
+		 TokenEnchant te = getTokenEnchant();
+	 te.removeTokens(p, tokens);
+	 }
+	 private void ganhouDado(Player p,int tokens) {
+		 TokenEnchant te = getTokenEnchant();
+	 int tokens2x = tokens * 2;
+	 te.addTokens(p, tokens2x);
+	 }
 
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player)) {
