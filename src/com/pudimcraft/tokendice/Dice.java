@@ -2,6 +2,7 @@ package com.pudimcraft.tokendice;
 
 import java.util.Random;
 
+
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
@@ -41,13 +42,33 @@ public class Dice extends JavaPlugin {
 		}
 		return (TokenEnchant) plugin;
 	}
+    public void startDelay(final Player p, int aposta) {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+            public void run() {
+            	TitleAPI.sendTitle(p,20,20,20,"§7Apostando" + aposta + "§7Tokens","§7No numero" + aposta + "§7do dado");
+            }
+        }, 40L); 
+    }
+    public void countdownDelay(final Player p, int countdown, int aposta) {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+            public void run() {
+            	TitleAPI.sendTitle(p,20,20,20,"§7Jogando Dado...","§0" + countdown);
+            }
+        }, 20L); 
+    }
+
 	 public boolean jogarDado(Player p, int aposta, int tokens) throws
 	 InterruptedException {
 	 Random r = new Random();
 	 int dadon = r.nextInt(6);
 	 this.dado = dadon;
 	 int finaldado = dadon +1;
-	 TitleAPI.sendTitle(p,20,20,20,"Apostando","§7" + aposta + "§7Tokens");
+	 startDelay(p, aposta);
+	 countdownDelay(p, 5, aposta);
+	 countdownDelay(p, 4, aposta);
+	 countdownDelay(p, 3, aposta);
+	 countdownDelay(p, 2, aposta);
+	 countdownDelay(p, 1, aposta);
 	 if(finaldado == aposta) {
 	 ganhouDado(p, tokens, finaldado);
 	 return true;
