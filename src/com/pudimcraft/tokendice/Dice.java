@@ -1,5 +1,6 @@
 package com.pudimcraft.tokendice;
 
+import java.util.HashMap;
 import java.util.Random;
 
 
@@ -25,7 +26,8 @@ public class Dice extends JavaPlugin {
 		getLogger().info("TokenDICE DESATIVADO");
 	}
 	 int dado;
-
+	 public HashMap<String, Long> cooldowns = new HashMap<String, Long>();
+	 
 	public boolean isInt(String str) {
 		try {
 			Integer.parseInt(str);
@@ -47,10 +49,10 @@ public class Dice extends JavaPlugin {
             public void run() {
             	int apostawin = aposta * 2;
             	if(resultado == 1) {
-            		TitleAPI.sendTitle(p,20,20,20,"§a§lGANHOU §e " + tokens,"§7No numero" + apostawin + "§7do dado");
+            		TitleAPI.sendTitle(p,20,80,20,"§a§lGANHOU §e " + apostawin + "§a§lTokens","§7No numero " + aposta + " §7do dado");
             		 p.playSound(p.getLocation(), Sound.BLOCK_NOTE_PLING, 1.0F, 1.0F);
             	} else {
-            		TitleAPI.sendTitle(p,20,20,20,"§c§lPERDEU §e " + tokens,"§7No numero" + aposta + "§7do dado");
+            		TitleAPI.sendTitle(p,20,80,20,"§c§lPERDEU §e " + tokens + "§c§lTokens","§7No numero " + aposta + " §7do dado");
             		 p.playSound(p.getLocation(), Sound.ENTITY_ENDERDRAGON_HURT, 1.0F, 1.0F);
 
             	}
@@ -100,6 +102,7 @@ public class Dice extends JavaPlugin {
 	 }
 
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		int cooldownTime = 60;
 		if (!(sender instanceof Player)) {
 			sender.sendMessage("§cUse esse comando no jogo.");
 			return true;
@@ -110,6 +113,13 @@ public class Dice extends JavaPlugin {
 				p.sendMessage("§cVoce nao pode fazer isso.");
 				p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_HURT, 1.0F, 1.0F);
 				return true;
+			}
+			if (cooldowns.containsKey(sender.getName())) {
+		            long secondsLeft = ((cooldowns.get(sender.getName())/1000)+cooldownTime) - (System.currentTimeMillis()/1000);
+		            if(secondsLeft>0) {
+		                sender.sendMessage("§cVoce deve esperar §e"+ secondsLeft +" §csegundos para apostar novamente.");
+		                return true;
+		            }
 			}
 			if (args.length == 0) {
 				p.sendMessage("§7Use: /tokendice [DADO] [APOSTA]");
@@ -145,6 +155,7 @@ public class Dice extends JavaPlugin {
 			} else {
 				try {
 					jogarDado(p, Integer.parseInt(args[0]), Integer.parseInt(args[1]));
+					cooldowns.put(sender.getName(), System.currentTimeMillis());
 				} catch (NumberFormatException | InterruptedException e) {
 					
 					e.printStackTrace();
