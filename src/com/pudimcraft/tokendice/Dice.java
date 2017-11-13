@@ -31,9 +31,10 @@ public class Dice extends JavaPlugin {
 				ChatColor.AQUA + getDescription().getName() + " V" + getDescription().getVersion() + " desativado!");
 	}
 
-	int cooldownTime = 60;
+	int cooldownTime = this.getConfig().getInt("Cooldown");
 	int fdado;
-	int multiplicador;
+	int multiplicador = this.getConfig().getInt("Multiplicador");
+	String prefix = this.getConfig().getString("Prefix");
 
 	public void setCooldownTime(int cooldownTime) {
 		this.cooldownTime = cooldownTime;
@@ -77,16 +78,16 @@ public class Dice extends JavaPlugin {
 	public void resultDelay(final Player p, final int aposta, final int tokens, final int resultado) {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
 			public void run() {
-				int apostawin = aposta * 2;
+				int apostawin = tokens * 2;
 				if (resultado == 1) {
 					TitleAPI.sendTitle(p, Integer.valueOf(20), Integer.valueOf(80), Integer.valueOf(20),
-							"§a§lGANHOU §e " + apostawin + "§a§lTokens",
-							"§7No numero " + Dice.this.getFdado() + " §7do dado");
+							Dice.this.getConfig().getString("TituloGanhou").replaceAll("%apostawin%", String.valueOf(apostawin)),
+							Dice.this.getConfig().getString("SubTituloGanhou").replaceAll("%fdado%", String.valueOf(Dice.this.getFdado())));
 					p.playSound(p.getLocation(), Sound.BLOCK_NOTE_PLING, 1.0F, 1.0F);
 				} else {
 					TitleAPI.sendTitle(p, Integer.valueOf(20), Integer.valueOf(80), Integer.valueOf(20),
-							"§c§lPERDEU §e " + tokens + "§c§lTokens",
-							"§7No numero " + Dice.this.getFdado() + " §7do dado");
+							Dice.this.getConfig().getString("TituloPerdeu").replaceAll("%tokens", String.valueOf(tokens)),
+							Dice.this.getConfig().getString("SubTituloPerdeu").replaceAll("%fdado%", String.valueOf(Dice.this.getFdado())));
 					p.playSound(p.getLocation(), Sound.ENTITY_ENDERDRAGON_HURT, 1.0F, 1.0F);
 				}
 			}
@@ -96,8 +97,8 @@ public class Dice extends JavaPlugin {
 	public void countdownDelay(final Player p, final int countdown, int aposta, int time) {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
 			public void run() {
-				TitleAPI.sendTitle(p, Integer.valueOf(0), Integer.valueOf(20), Integer.valueOf(0), "§7Jogando Dado...",
-						"§0" + countdown);
+				TitleAPI.sendTitle(p, Integer.valueOf(0), Integer.valueOf(20), Integer.valueOf(0), "§1§lJogando Dado...",
+						"§f§l0" + countdown);
 				p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BASS, 1.0F, 1.0F);
 			}
 		}, time);
@@ -106,7 +107,7 @@ public class Dice extends JavaPlugin {
 	public boolean jogarDado(Player p, int aposta, int tokens) throws InterruptedException {
 		rodarDado();
 		TitleAPI.sendTitle(p, Integer.valueOf(20), Integer.valueOf(20), Integer.valueOf(20),
-				"§7Apostando" + tokens + "§7Tokens", "§7No numero" + aposta + "§7do dado");
+				"§1Apostando §f" + tokens + " §1Tokens", "§1No numero §e" + aposta + " §1do dado");
 		countdownDelay(p, 5, aposta, 40);
 		countdownDelay(p, 4, aposta, 60);
 		countdownDelay(p, 3, aposta, 80);
@@ -125,12 +126,28 @@ public class Dice extends JavaPlugin {
 	private void perdeuDado(Player p, int tokens) {
 		TokenEnchant te = getTokenEnchant();
 		te.removeTokens(p, tokens);
+		if(tokens >= 1000) {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable( ) {
+				public void run() {
+					Bukkit.broadcastMessage(prefix + "§e " + p.getName() + " §c perdeu §e" + tokens + "§ctokens.");
+				}
+			}, 140L);
+			
+		}
 	}
 
 	private void ganhouDado(Player p, int tokens) {
 		TokenEnchant te = getTokenEnchant();
 		int tokensx = tokens * getMultiplicador();
 		te.addTokens(p, tokensx);
+		if(tokensx >= 1000) {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable( ) {
+				public void run() {
+					Bukkit.broadcastMessage(prefix + "§e " + p.getName() + " §a ganhou §e" + tokensx + " §atokens.");
+				}
+			}, 140);
+		}
+
 	}
 
 	public int getMultiplicador() {
@@ -163,7 +180,7 @@ public class Dice extends JavaPlugin {
 				return true;
 			}
 			if (args.length == 1) {
-				p.sendMessage("§7Use: /tokendice [DADO] [APOSTA]");
+				p.sendMessage(this.getConfig().getString("Usage"));
 				p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_HURT, 1.0F, 1.0F);
 				return true;
 			}
@@ -196,45 +213,7 @@ public class Dice extends JavaPlugin {
 				e.printStackTrace();
 			}
 		}
-		if (cmd.getName().equalsIgnoreCase("tokendicemultiplicador")) {
-			if (!p.hasPermission("tokendice.admin")) {
-				p.sendMessage("Voce nao pode mudar o multiplicador");
-				p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_HURT, 1.0F, 1.0F);
-			}
-			if (!isInt(args[0])) {
-				p.sendMessage("O multiplicador deve ser um numero.");
-				p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_HURT, 1.0F, 1.0F);
-			}
-			if (Integer.parseInt(args[0]) <= 1) {
-				p.sendMessage("Multiplicador deve ser maior que 1 e diferente de 0");
-				p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_HURT, 1.0F, 1.0F);
-			} else {
-				setMultiplicador(Integer.parseInt(args[0]));
-				p.sendMessage("§aMultiplicador colocado para" + args[0] + "vezes");
-				p.playSound(p.getLocation(), Sound.BLOCK_NOTE_PLING, 1.0F, 1.0F);
-			}
-		}
-		if (cmd.getName().equalsIgnoreCase("tokendicecooldown")) {
-			if (!p.hasPermission("tokendice.admin")) {
-				p.sendMessage("Voce nao pode mudar o cooldown");
-				p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_HURT, 1.0F, 1.0F);
-			}
-			if (args.length == 0) {
-				p.sendMessage("Use um argumento");
-				p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_HURT, 1.0F, 1.0F);
-			}
-			if (!isInt(args[0])) {
-				p.sendMessage("O cooldown deve ser um numero");
-				p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_HURT, 1.0F, 1.0F);
-			}
-			if (Integer.parseInt(args[0]) <= 7) {
-				p.sendMessage("Cooldown deve ser maior do que 7");
-			} else {
-				setCooldownTime(Integer.parseInt(args[0]));
-				p.sendMessage("§aCooldown colocado para" + args[0] + "segundos!");
-				p.playSound(p.getLocation(), Sound.BLOCK_NOTE_PLING, 1.0F, 1.0F);
-			}
-		}
 		return false;
+
 	}
 }

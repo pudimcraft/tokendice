@@ -1,1 +1,16 @@
-Explicacao: "§0§lToken§f§lDICE §7- Explicacao"
+#Prefixo que aparece a frente das mensagens
+Prefix: §1§l[TokenDice]
+#Mensagem que aparece quando o comando esta errado.
+Usage: "§7Use: /tokendice [DADO] [APOSTA]"
+#Por qual numero deve ser multiplicada a aposta.
+Multiplicador: 4
+#Deve ser maior que 10:
+Cooldown: 60
+#Titulo de quando o jogador ganha.
+TituloGanhou: "§a§lGANHOU %apostawin% §a§lTokens"
+#Sub titulo de quando o jogador ganha.
+SubTituloGanhou: "§7No numero %fdado% §7do dado"
+#Titulo de quando o jogador perde.
+TituloPerdeu: "§c§lPERDEU§e %tokens% §c§lTokens"
+#Sub titulo de quando o jogador perde.
+SubTituloPerdeu: "§7No numero %fdado% §7do dado"
